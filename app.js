@@ -3,6 +3,9 @@ var path = require('path')
 var cookieParser = require('cookie-parser')
 var logger = require('morgan')
 
+var mongoConnection = require('./config/dbconnect')
+mongoConnection()
+
 var indexRouter = require('./routes/index')
 
 var app = express()
