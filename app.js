@@ -8,6 +8,7 @@ mongoConnection()
 
 var indexRouter = require('./routes/index')
 var userRouter = require('./routes/api/users')
+var authRouter = require('./routes/api/auth')
 
 var app = express()
 
@@ -19,5 +20,6 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 app.use('/', indexRouter)
 app.use('/api/users', userRouter)
+app.use('/api/auth', authRouter)
 
 module.exports = app
