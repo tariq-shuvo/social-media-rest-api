@@ -7,6 +7,7 @@ var mongoConnection = require('./config/dbconnect')
 mongoConnection()
 
 var indexRouter = require('./routes/index')
+var userRouter = require('./routes/api/users')
 
 var app = express()
 
@@ -17,5 +18,6 @@ app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 
 app.use('/', indexRouter)
+app.use('/api/users', userRouter)
 
 module.exports = app
