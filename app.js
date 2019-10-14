@@ -10,12 +10,15 @@ var indexRouter = require('./routes/index')
 var userRouter = require('./routes/api/users')
 var authRouter = require('./routes/api/auth')
 var profileRouter = require('./routes/api/profile')
+var postRouter = require('./routes/api/post')
 
 var app = express()
 
 app.use(logger('dev'))
 app.use(express.json())
-app.use(express.urlencoded({extended: false}))
+app.use(express.urlencoded({
+    extended: false
+}))
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 
@@ -23,5 +26,6 @@ app.use('/', indexRouter)
 app.use('/api/users', userRouter)
 app.use('/api/auth', authRouter)
 app.use('/api/profile', profileRouter)
+app.use('/api/post', postRouter)
 
 module.exports = app
