@@ -1,10 +1,34 @@
 const express = require('express')
 const router = express.Router()
 
+const fs = require('fs')
+
 const {
   check,
   validationResult
 } = require('express-validator')
+
+const multer = require('multer');
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, './public/images/users');
+  },
+  filename: (req, file, cb) => {
+    var filetype = '';
+    if (file.mimetype === 'image/png') {
+      filetype = 'png';
+    }
+    if (file.mimetype === 'image/jpeg') {
+      filetype = 'jpg';
+    }
+    cb(null, 'image-' + Date.now() + '.' + filetype);
+  }
+});
+
+const upload = multer({
+  storage: storage
+});
 
 // Load Middleware
 const auth = require('../../middleware/auth')
@@ -15,6 +39,51 @@ const Profile = require('../../models/Profile')
 const User = require('../../models/User')
 // Load Post model
 const Post = require('../../models/Post')
+
+const removeNotvalidateFile = (res, uploadedFileDetails, validationMessage) => {
+  fs.unlink(uploadedFileDetails.path, (err) => {
+    if (err) {
+      console.error(err)
+      return
+    } else {
+      return res.json({
+        errors: [{
+          msg: validationMessage
+        }]
+      })
+    }
+  });
+}
+
+// @route api/profile/picture
+// @description Add New Profile Picture
+// @access Private
+router.put('/picture', [auth, upload.single('file')], async (req, res) => {
+  let validationMessage = '';
+  const uploadedFileDetails = req.file
+  if (uploadedFileDetails.mimetype === 'image/png' || uploadedFileDetails.mimetype === 'image/jpeg') {
+    const filesize = parseFloat(uploadedFileDetails.size) / (1024 * 1024)
+    if (filesize < 1) {
+      try {
+        let path = uploadedFileDetails.path.replace('public\\', './')
+        let user = await User.findById(req.user.id)
+        user.avatar = path.replace(/\\/g, "/")
+        await user.save()
+        return res.json(user)
+      } catch (error) {
+        console.error(error.message)
+        return res.status(500).send('Server error')
+      }
+    } else {
+      validationMessage = 'File should not be more than 1 MB.'
+      removeNotvalidateFile(res, uploadedFileDetails, validationMessage)
+    }
+  } else {
+    validationMessage = 'Only png and jpg files are allowed.'
+    removeNotvalidateFile(res, uploadedFileDetails, validationMessage)
+  }
+})
+
 
 // @route api/profile/me
 // @description Fetch User Profile Info
